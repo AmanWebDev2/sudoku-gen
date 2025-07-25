@@ -1,6 +1,6 @@
 {
   "name": "@amanwebdev/sudoku-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sudoku generator",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,9 +9,13 @@
   ],
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "test": "jest"
   },
-  "keywords": ["sudoku", "generator"],
+  "keywords": [
+    "sudoku",
+    "generator"
+  ],
   "author": "Aman <webdevaman2@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -24,7 +28,10 @@
   "homepage": "https://github.com/amanwebdev2/sudoku-generator#readme",
   "type": "commonjs",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.1.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
