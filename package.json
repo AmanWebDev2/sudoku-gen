@@ -1,7 +1,7 @@
 {
-  "name": "games",
+  "name": "sudoku-generator",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sudoku generator",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,8 +11,8 @@
     "build": "tsc",
     "start": "ts-node src/index.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["sudoku", "generator"],
+  "author": "Aman <webdevaman2@gmail.com>",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
