@@ -1,5 +1,5 @@
 {
-  "name": "sudoku-generator",
+  "name": "@amanwebdev/sudoku-generator",
   "version": "1.0.0",
   "description": "Sudoku generator",
   "main": "dist/index.js",
@@ -13,7 +13,15 @@
   },
   "keywords": ["sudoku", "generator"],
   "author": "Aman <webdevaman2@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amanwebdev2/sudoku-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amanwebdev2/sudoku-generator/issues"
+  },
+  "homepage": "https://github.com/amanwebdev2/sudoku-generator#readme",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^24.1.0",
