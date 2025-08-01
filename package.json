@@ -20,12 +20,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amanwebdev2/sudoku-generator.git"
+    "url": "git+https://github.com/AmanWebDev2/sudoku-gen"
   },
   "bugs": {
-    "url": "https://github.com/amanwebdev2/sudoku-generator/issues"
+    "url": "https://github.com/AmanWebDev2/sudoku-gen/issues"
   },
-  "homepage": "https://github.com/amanwebdev2/sudoku-generator#readme",
+  "homepage": "https://github.com/AmanWebDev2/sudoku-gen#readme",
   "type": "commonjs",
   "devDependencies": {
     "@types/jest": "^30.0.0",
