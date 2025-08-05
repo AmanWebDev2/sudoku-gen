@@ -19,6 +19,7 @@ interface PDFOptions {
   author?: string;
   subject?: string;
   keywords?: string;
+  showSolution?: boolean;
 }
 
 interface Sudoku {
@@ -287,7 +288,8 @@ function getThemeColors(theme: Theme) {
 
 async function toPDF(
   grid: number[][],
-  options: PDFOptions = {}
+  options: PDFOptions = {},
+  solution?: number[][]
 ): Promise<Uint8Array> {
   const {
     theme = "light",
@@ -295,6 +297,7 @@ async function toPDF(
     author = "Sudoku Generator",
     subject = "Sudoku Puzzle",
     keywords = "sudoku, puzzle, game",
+    showSolution = false,
   } = options;
 
   const colors = getThemeColors(theme);
@@ -348,11 +351,33 @@ async function toPDF(
 
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
-      const cellValue = grid[row][col];
-      if (cellValue !== 0) {
+      const puzzleValue = grid[row][col];
+      const solutionValue = solution ? solution[row][col] : 0;
+      
+      let displayValue = 0;
+      let isGivenDigit = false;
+      
+      if (showSolution && solution) {
+        displayValue = solutionValue;
+        isGivenDigit = puzzleValue !== 0;
+      } else {
+        displayValue = puzzleValue;
+        isGivenDigit = true;
+      }
+      
+      if (displayValue !== 0) {
         const x = startX + col * cellSize + cellSize / 2;
         const y = startY + row * cellSize + cellSize / 2 + (size === 9 ? 3 : size === 6 ? 4 : 5);
-        doc.text(cellValue.toString(), x, y, { align: "center" });
+        
+        if (showSolution && !isGivenDigit) {
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(colors.textColor === "#000000" ? "#666666" : "#cccccc");
+        } else {
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(colors.textColor);
+        }
+        
+        doc.text(displayValue.toString(), x, y, { align: "center" });
       }
     }
   }
