@@ -27,6 +27,9 @@
   },
   "homepage": "https://github.com/AmanWebDev2/sudoku-gen#readme",
   "type": "commonjs",
+  "dependencies": {
+    "jspdf": "^2.5.2"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.1.0",

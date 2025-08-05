@@ -1,5 +1,25 @@
+import { jsPDF } from "jspdf";
+
 type SudokuSize = 4 | 6 | 9;
 type Difficulty = "easy" | "medium" | "hard";
+
+type Theme =
+  | "light"
+  | "dark"
+  | {
+      background: string;
+      gridColor: string;
+      textColor: string;
+      boxLineColor: string;
+    };
+
+interface PDFOptions {
+  theme?: Theme;
+  title?: string;
+  author?: string;
+  subject?: string;
+  keywords?: string;
+}
 
 interface Sudoku {
   size: SudokuSize;
@@ -245,4 +265,117 @@ function solve(
   }
 }
 
-export { generateSudoku, Sudoku, SudokuSize, Difficulty };
+function getThemeColors(theme: Theme) {
+  if (theme === "light" || !theme) {
+    return {
+      background: "#ffffff",
+      gridColor: "#000000",
+      textColor: "#000000",
+      boxLineColor: "#000000",
+    };
+  } else if (theme === "dark") {
+    return {
+      background: "#2d2d2d",
+      gridColor: "#ffffff",
+      textColor: "#ffffff",
+      boxLineColor: "#ffffff",
+    };
+  } else {
+    return theme;
+  }
+}
+
+async function toPDF(
+  grid: number[][],
+  options: PDFOptions = {}
+): Promise<Uint8Array> {
+  const {
+    theme = "light",
+    title = "Sudoku Puzzle",
+    author = "Sudoku Generator",
+    subject = "Sudoku Puzzle",
+    keywords = "sudoku, puzzle, game",
+  } = options;
+
+  const colors = getThemeColors(theme);
+  const size = grid.length as SudokuSize;
+
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  doc.setProperties({
+    title,
+    author,
+    subject,
+    keywords,
+  });
+
+  if (colors.background !== "#ffffff") {
+    doc.setFillColor(colors.background);
+    doc.rect(0, 0, 210, 297, "F");
+  }
+
+  doc.setTextColor(colors.textColor);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(24);
+  doc.text(title, 105, 30, { align: "center" });
+
+  const cellSize = size === 9 ? 20 : size === 6 ? 25 : 30;
+  const totalGridSize = size * cellSize;
+  const startX = (210 - totalGridSize) / 2;
+  const startY = 60;
+
+  doc.setDrawColor(colors.gridColor);
+
+  for (let i = 0; i <= size; i++) {
+    const isBoxLine = getBoxLinePositions(size).includes(i);
+    const lineWidth = isBoxLine ? 2.268 : 0.85;
+    doc.setLineWidth(lineWidth);
+
+    const x = startX + i * cellSize;
+    doc.line(x, startY, x, startY + totalGridSize);
+
+    const y = startY + i * cellSize;
+    doc.line(startX, y, startX + totalGridSize, y);
+  }
+
+  doc.setTextColor(colors.textColor);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(size === 9 ? 14 : size === 6 ? 16 : 20);
+
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const cellValue = grid[row][col];
+      if (cellValue !== 0) {
+        const x = startX + col * cellSize + cellSize / 2;
+        const y = startY + row * cellSize + cellSize / 2 + (size === 9 ? 3 : size === 6 ? 4 : 5);
+        doc.text(cellValue.toString(), x, y, { align: "center" });
+      }
+    }
+  }
+
+  return new Uint8Array(doc.output("arraybuffer"));
+}
+
+function getBoxLinePositions(size: SudokuSize): number[] {
+  if (size === 4) {
+    return [0, 2, 4];
+  } else if (size === 6) {
+    return [0, 2, 4, 6];
+  } else {
+    return [0, 3, 6, 9];
+  }
+}
+
+export {
+  generateSudoku,
+  toPDF,
+  Sudoku,
+  SudokuSize,
+  Difficulty,
+  Theme,
+  PDFOptions,
+};
