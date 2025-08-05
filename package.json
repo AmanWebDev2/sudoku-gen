@@ -25,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/AmanWebDev2/sudoku-gen/issues"
   },
-  "homepage": "https://github.com/AmanWebDev2/sudoku-gen#readme",
+  "homepage": "https://sudokugenerator.vercel.app/",
   "type": "commonjs",
   "dependencies": {
     "jspdf": "^2.5.2"
