@@ -94,6 +94,18 @@ Exports a Sudoku grid to PDF format.
 
 **Returns:** `Promise<Uint8Array>` - PDF file as bytes
 
+## Sample Output
+
+### Puzzle PDF
+Clean, printable Sudoku puzzles with professional formatting:
+
+![Puzzle Example](docs/puzzle.png)
+
+### Solution PDF  
+Solutions with visual distinction between given and solved digits:
+
+![Solution Example](docs/solution.png)
+
 ## Features
 
 ### PDF Export
