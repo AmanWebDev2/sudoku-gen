@@ -150,17 +150,28 @@ export function InteractiveDemo() {
   };
 
   const renderGrid = (grid: number[][]) => {
+    // Responsive cell sizes - smaller on mobile
     const cellSize =
-      size === 4 ? "w-16 h-16" : size === 6 ? "w-14 h-14" : "w-12 h-12";
+      size === 4
+        ? "w-12 h-12 sm:w-16 sm:h-16"
+        : size === 6
+        ? "w-10 h-10 sm:w-14 sm:h-14"
+        : "w-8 h-8 sm:w-12 sm:h-12";
+
+    // Responsive font sizes
     const fontSize =
-      size === 4 ? "text-2xl" : size === 6 ? "text-xl" : "text-lg";
+      size === 4
+        ? "text-lg sm:text-2xl"
+        : size === 6
+        ? "text-base sm:text-xl"
+        : "text-sm sm:text-lg";
 
     const subgridSize = size === 4 ? 2 : size === 6 ? 2 : 3;
 
     return (
-      <div className="inline-block p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200">
+      <div className="inline-block p-2 sm:p-4 md:p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 max-w-full">
         <div
-          className="grid gap-1"
+          className="grid gap-0.5 sm:gap-1 max-w-full overflow-hidden"
           style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
         >
           {grid.map((row, rowIndex) =>
@@ -221,77 +232,11 @@ export function InteractiveDemo() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-6">
-      <div className="max-w-7xl mx-auto min-h-screen flex flex-col">
-        {/* Header with Links */}
-        <div className="relative mb-6 flex-shrink-0">
-          {/* Top Right Links - Hidden on mobile, shown on larger screens */}
-          <div className="hidden md:flex absolute top-0 right-0 gap-3">
-            <a
-              href="https://github.com/AmanWebDev2/sudoku-gen"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-white/90 text-gray-700 hover:text-gray-900"
-            >
-              <Github className="w-4 h-4" />
-              <span className="text-sm font-medium">GitHub</span>
-            </a>
-            <a
-              href="https://www.npmjs.com/package/@amanwebdev/sudoku-generator"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-white/90 text-gray-700 hover:text-gray-900"
-            >
-              <Package className="w-4 h-4" />
-              <span className="text-sm font-medium">NPM</span>
-            </a>
-          </div>
-
-          {/* Main Header Content */}
-          <div className="text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-8 h-8 text-purple-500" />
-              Live Puzzle Generator
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
-              Create beautiful Sudoku puzzles with custom titles using{" "}
-              <code className="px-1 py-0.5 bg-gray-100 rounded text-xs">
-                generateSudoku()
-              </code>{" "}
-              and{" "}
-              <code className="px-1 py-0.5 bg-gray-100 rounded text-xs">
-                toPDF()
-              </code>
-            </p>
-
-            {/* Mobile Links - Shown only on smaller screens */}
-            <div className="flex md:hidden justify-center gap-3 mt-4">
-              <a
-                href="https://github.com/AmanWebDev2/sudoku-gen"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-white/90 text-gray-700 hover:text-gray-900"
-              >
-                <Github className="w-4 h-4" />
-                <span className="text-sm font-medium">GitHub</span>
-              </a>
-              <a
-                href="https://www.npmjs.com/package/@amanwebdev/sudoku-generator"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-white/90 text-gray-700 hover:text-gray-900"
-              >
-                <Package className="w-4 h-4" />
-                <span className="text-sm font-medium">NPM</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content - Two Column Layout */}
-        <div className="grid lg:grid-cols-5 gap-6 flex-1 min-h-0">
+    <section className="container mx-auto px-2 sm:px-4 py-4 lg:py-6">
+      <div className="max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-2rem)] lg:min-h-[calc(100vh-3rem)]">
+        <div className="grid lg:grid-cols-5 gap-4 lg:gap-6 flex-1 min-h-0 mt-10">
           {/* Left Column - Configuration */}
-          <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
+          <div className="lg:col-span-2 space-y-3 lg:space-y-4 order-2 lg:order-1">
             {/* Configuration Card */}
             <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-lg">
               <CardHeader className="pb-3">
@@ -420,11 +365,16 @@ export function InteractiveDemo() {
                     className="border-2 hover:bg-gray-50 transition-all duration-200 h-9"
                   >
                     {showSolution ? (
-                      <EyeOff className="w-4 h-4 mr-1" />
+                      <EyeOff className="w-4 h-4 sm:mr-1" />
                     ) : (
-                      <Eye className="w-4 h-4 mr-1" />
+                      <Eye className="w-4 h-4 sm:mr-1" />
                     )}
-                    {showSolution ? "Hide Solution" : "Show Solution"}
+                    <span className="hidden sm:inline">
+                      {showSolution ? "Hide Solution" : "Show Solution"}
+                    </span>
+                    <span className="sm:hidden">
+                      {showSolution ? "Hide" : "Show"}
+                    </span>
                   </Button>
 
                   <Button
@@ -433,8 +383,9 @@ export function InteractiveDemo() {
                     disabled={!currentPuzzle}
                     className="border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 h-9"
                   >
-                    <Download className="w-4 h-4 mr-1" />
-                    Export
+                    <Download className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Export</span>
+                    <span className="sm:hidden">PDF</span>
                   </Button>
                 </div>
               </CardContent>
@@ -443,7 +394,7 @@ export function InteractiveDemo() {
 
           {/* Right Column - Puzzle Display */}
           <div className="lg:col-span-3 order-1 lg:order-2 min-h-0">
-            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-lg h-full flex flex-col">
+            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-lg flex flex-col">
               <CardHeader className="text-center pb-3 flex-shrink-0">
                 <CardTitle className="text-xl font-semibold text-gray-800">
                   {customTitle.trim() ? customTitle : "Sudoku Puzzle"}
@@ -461,15 +412,17 @@ export function InteractiveDemo() {
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="flex flex-col items-center justify-center flex-1 min-h-0 pb-4">
+              <CardContent className="flex flex-col items-center justify-center flex-1 min-h-0 pb-4 px-2 sm:px-6">
                 {currentPuzzle && (
-                  <div className="space-y-4 flex flex-col items-center h-full justify-center">
-                    <div className="transition-all duration-300 hover:scale-[1.01]">
-                      {renderGrid(
-                        showSolution
-                          ? currentPuzzle.solution
-                          : currentPuzzle.grid
-                      )}
+                  <div className="space-y-2 sm:space-y-4 flex flex-col items-center h-full w-full">
+                    <div className="transition-all duration-300 hover:scale-[1.01] flex justify-center w-full overflow-x-auto">
+                      <div className="flex-shrink-0">
+                        {renderGrid(
+                          showSolution
+                            ? currentPuzzle.solution
+                            : currentPuzzle.grid
+                        )}
+                      </div>
                     </div>
 
                     <div className="text-center">
@@ -516,6 +469,28 @@ export function InteractiveDemo() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Small Footer Links */}
+        <div className="flex justify-center gap-4 mt-6 pt-4 border-t border-white/20">
+          <a
+            href="https://github.com/AmanWebDev2/sudoku-gen"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors duration-200 text-sm"
+          >
+            <Github className="w-4 h-4" />
+            <span>GitHub</span>
+          </a>
+          <a
+            href="https://www.npmjs.com/package/@amanwebdev/sudoku-generator"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors duration-200 text-sm"
+          >
+            <Package className="w-4 h-4" />
+            <span>NPM</span>
+          </a>
         </div>
       </div>
     </section>
