@@ -76,6 +76,7 @@ export function InteractiveDemo() {
   const handleGenerate = () => {
     setIsGenerating(true);
     setShowSolution(false);
+    setCurrentPuzzle(null); // Clear current puzzle immediately
     setTimeout(() => {
       generateNewPuzzle();
       setIsGenerating(false);
