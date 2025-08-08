@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { createCanvas } from "canvas";
 
 type SudokuSize = 4 | 6 | 9;
 type Difficulty = "easy" | "medium" | "hard";
@@ -20,6 +21,14 @@ interface PDFOptions {
   subject?: string;
   keywords?: string;
   showSolution?: boolean;
+}
+
+interface ImageOptions {
+  theme?: Theme;
+  cellSize?: number;
+  showSolution?: boolean;
+  format?: "png" | "jpeg";
+  quality?: number;
 }
 
 interface Sudoku {
@@ -395,12 +404,106 @@ function getBoxLinePositions(size: SudokuSize): number[] {
   }
 }
 
+function toImage(
+  grid: number[][],
+  options: ImageOptions = {},
+  solution?: number[][]
+): Buffer {
+  const {
+    theme = "light",
+    cellSize = 60,
+    showSolution = false,
+    format = "png",
+    quality = 0.95,
+  } = options;
+
+  const colors = getThemeColors(theme);
+  const size = grid.length as SudokuSize;
+  
+  const totalGridSize = size * cellSize;
+  const padding = cellSize;
+  const canvasWidth = totalGridSize + padding * 2;
+  const canvasHeight = totalGridSize + padding * 2;
+
+  const canvas = createCanvas(canvasWidth, canvasHeight);
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = colors.background;
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  ctx.strokeStyle = colors.gridColor;
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i <= size; i++) {
+    const isBoxLine = getBoxLinePositions(size).includes(i);
+    ctx.lineWidth = isBoxLine ? 3 : 1;
+
+    const x = padding + i * cellSize;
+    ctx.beginPath();
+    ctx.moveTo(x, padding);
+    ctx.lineTo(x, padding + totalGridSize);
+    ctx.stroke();
+
+    const y = padding + i * cellSize;
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(padding + totalGridSize, y);
+    ctx.stroke();
+  }
+
+  const fontSize = cellSize * 0.5;
+  ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const puzzleValue = grid[row][col];
+      const solutionValue = solution ? solution[row][col] : 0;
+      
+      let displayValue = 0;
+      let isGivenDigit = false;
+      
+      if (showSolution && solution) {
+        displayValue = solutionValue;
+        isGivenDigit = puzzleValue !== 0;
+      } else {
+        displayValue = puzzleValue;
+        isGivenDigit = true;
+      }
+      
+      if (displayValue !== 0) {
+        const x = padding + col * cellSize + cellSize / 2;
+        const y = padding + row * cellSize + cellSize / 2;
+        
+        if (showSolution && !isGivenDigit) {
+          ctx.fillStyle = colors.textColor === "#000000" ? "#666666" : "#cccccc";
+          ctx.font = `${fontSize}px Arial, sans-serif`;
+        } else {
+          ctx.fillStyle = colors.textColor;
+          ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        }
+        
+        ctx.fillText(displayValue.toString(), x, y);
+      }
+    }
+  }
+
+  if (format === "jpeg") {
+    return canvas.toBuffer("image/jpeg", { quality });
+  } else {
+    return canvas.toBuffer("image/png");
+  }
+}
+
 export {
   generateSudoku,
   toPDF,
+  toImage,
   Sudoku,
   SudokuSize,
   Difficulty,
   Theme,
   PDFOptions,
+  ImageOptions,
 };
