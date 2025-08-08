@@ -49,6 +49,33 @@ const solutionPdf = await toPDF(sudoku.grid, {
 fs.writeFileSync('solution.pdf', solutionPdf);
 ```
 
+### Image Export
+
+```javascript
+const { generateSudoku, toImage } = require('@amanwebdev/sudoku-generator');
+const fs = require('fs');
+
+const sudoku = generateSudoku(9, 'medium');
+
+// Generate puzzle image
+const puzzleImage = toImage(sudoku.grid, {
+  theme: 'light',
+  cellSize: 80,
+  format: 'png'
+});
+fs.writeFileSync('puzzle.png', puzzleImage);
+
+// Generate solution image with visual distinction
+const solutionImage = toImage(sudoku.grid, {
+  theme: 'dark',
+  cellSize: 60,
+  format: 'jpeg',
+  quality: 0.9,
+  showSolution: true
+}, sudoku.solution);
+fs.writeFileSync('solution.jpg', solutionImage);
+```
+
 ## API
 
 ### `generateSudoku(size, difficulty)`
@@ -94,6 +121,24 @@ Exports a Sudoku grid to PDF format.
 
 **Returns:** `Promise<Uint8Array>` - PDF file as bytes
 
+### `toImage(grid, options?, solution?)`
+
+Exports a Sudoku grid to image format (PNG or JPEG).
+
+**Parameters:**
+-   `grid`: A 2D number array representing the puzzle grid
+-   `options`: Optional image configuration object
+-   `solution`: Optional 2D number array for solution display (required when `showSolution: true`)
+
+**Options:**
+-   `theme`: `'light'` | `'dark'` | custom theme object (default: `'light'`)
+-   `cellSize`: Size of each cell in pixels (default: `60`)
+-   `showSolution`: Boolean to display solution with visual distinction (default: `false`)
+-   `format`: `'png'` | `'jpeg'` - Output image format (default: `'png'`)
+-   `quality`: JPEG quality from 0 to 1 (default: `0.95`, only applies to JPEG format)
+
+**Returns:** `Buffer` - Image file as bytes
+
 ## Sample Output
 
 ### Puzzle PDF
@@ -115,6 +160,14 @@ Solutions with visual distinction between given and solved digits:
 - **Solution Display**: Visual distinction between given and solved digits
 - **Metadata Support**: Title, author, subject, and keywords
 - **Print Ready**: Proper stroke weights and sizing for printing
+
+### Image Export
+- **Flexible Canvas Size**: Configurable cell sizes for different output resolutions
+- **Multiple Formats**: PNG and JPEG export with quality control
+- **Theme Support**: Same theming system as PDF export
+- **Solution Overlay**: Visual distinction between given and solved digits
+- **Server-side Rendering**: Node.js canvas-based generation
+- **Scalable Output**: Adjustable dimensions for web, print, or display use
 
 ### Visual Design
 - **Given digits**: Bold, full opacity
