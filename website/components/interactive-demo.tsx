@@ -32,8 +32,7 @@ import {
   Image,
 } from "lucide-react";
 
-// Import the actual sudoku generator package
-import { generateSudoku, toPDF, toImage } from "../../src/index";
+// Browser-only component - uses API routes for server-side operations
 
 interface SudokuData {
   grid: number[][];
@@ -58,7 +57,7 @@ export function InteractiveDemo() {
     generateNewPuzzle();
   }, []);
 
-  const generateNewPuzzle = (
+  const generateNewPuzzle = async (
     newSize?: 4 | 6 | 9,
     newDifficulty?: "easy" | "medium" | "hard"
   ) => {
@@ -66,7 +65,23 @@ export function InteractiveDemo() {
       setError(null);
       const puzzleSize = newSize || size;
       const puzzleDifficulty = newDifficulty || difficulty;
-      const puzzle = generateSudoku(puzzleSize, puzzleDifficulty);
+      
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          size: puzzleSize,
+          difficulty: puzzleDifficulty,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate puzzle');
+      }
+      
+      const puzzle = await response.json();
       setCurrentPuzzle(puzzle);
     } catch (err) {
       setError("Failed to generate puzzle. Please try again.");
@@ -74,17 +89,16 @@ export function InteractiveDemo() {
     }
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
     setShowSolution(false);
     setCurrentPuzzle(null); // Clear current puzzle immediately
-    setTimeout(() => {
-      generateNewPuzzle();
-      setIsGenerating(false);
-    }, 500);
+    await new Promise(resolve => setTimeout(resolve, 500)); // UI delay
+    await generateNewPuzzle();
+    setIsGenerating(false);
   };
 
-  const handleSizeChange = (newSize: string) => {
+  const handleSizeChange = async (newSize: string) => {
     const sizeNum = parseInt(newSize) as 4 | 6 | 9;
     setSize(sizeNum);
     setShowSolution(false);
@@ -92,13 +106,12 @@ export function InteractiveDemo() {
     setIsGenerating(true);
 
     // Generate new puzzle with the new size after a brief delay for smooth UI transition
-    setTimeout(() => {
-      generateNewPuzzle(sizeNum, difficulty);
-      setIsGenerating(false);
-    }, 300);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await generateNewPuzzle(sizeNum, difficulty);
+    setIsGenerating(false);
   };
 
-  const handleDifficultyChange = (
+  const handleDifficultyChange = async (
     newDifficulty: "easy" | "medium" | "hard"
   ) => {
     setDifficulty(newDifficulty);
@@ -107,10 +120,9 @@ export function InteractiveDemo() {
     setIsGenerating(true);
 
     // Generate new puzzle with the new difficulty after a brief delay for smooth UI transition
-    setTimeout(() => {
-      generateNewPuzzle(size, newDifficulty);
-      setIsGenerating(false);
-    }, 300);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await generateNewPuzzle(size, newDifficulty);
+    setIsGenerating(false);
   };
 
   const handleExportPDF = async () => {
@@ -121,19 +133,29 @@ export function InteractiveDemo() {
         ? customTitle
         : `Sudoku ${size}×${size} - ${difficulty}`;
 
-      const pdfBuffer = await toPDF(
-        currentPuzzle.grid,
-        {
-          title,
-          theme: "light",
-          author: "Sudoku Generator Demo",
-          subject: `${size}x${size} Sudoku Puzzle`,
-          showSolution: includeSolution,
+      const response = await fetch('/api/export/pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        currentPuzzle.solution
-      );
+        body: JSON.stringify({
+          grid: currentPuzzle.grid,
+          options: {
+            title,
+            theme: "light",
+            author: "Sudoku Generator Demo",
+            subject: `${size}x${size} Sudoku Puzzle`,
+            showSolution: includeSolution,
+          },
+          solution: currentPuzzle.solution,
+        }),
+      });
 
-      const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+      if (!response.ok) {
+        throw new Error('Failed to export PDF');
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -151,101 +173,45 @@ export function InteractiveDemo() {
     }
   };
 
-  const handleExportImage = () => {
+  const handleExportImage = async () => {
     if (!currentPuzzle) return;
 
     try {
-      // Create browser-compatible canvas for image generation
-      const cellSize = 80;
-      const grid = includeSolution
-        ? currentPuzzle.solution
-        : currentPuzzle.grid;
-      const totalGridSize = size * cellSize;
-      const padding = cellSize;
-      const canvasWidth = totalGridSize + padding * 2;
-      const canvasHeight = totalGridSize + padding * 2;
+      const fileName = `sudoku-${size}x${size}-${difficulty}${
+        includeSolution ? "-with-solution" : ""
+      }.png`;
 
-      const canvas = document.createElement("canvas");
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      const ctx = canvas.getContext("2d")!;
+      const response = await fetch('/api/export/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grid: currentPuzzle.grid,
+          options: {
+            theme: "light",
+            cellSize: 80,
+            showSolution: includeSolution,
+            format: "png",
+            filename: fileName,
+          },
+          solution: currentPuzzle.solution,
+        }),
+      });
 
-      // Background
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      // Grid lines
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 1;
-
-      const getBoxLinePositions = (size: number): number[] => {
-        if (size === 4) return [0, 2, 4];
-        if (size === 6) return [0, 2, 4, 6];
-        return [0, 3, 6, 9];
-      };
-
-      for (let i = 0; i <= size; i++) {
-        const isBoxLine = getBoxLinePositions(size).includes(i);
-        ctx.lineWidth = isBoxLine ? 3 : 1;
-
-        const x = padding + i * cellSize;
-        ctx.beginPath();
-        ctx.moveTo(x, padding);
-        ctx.lineTo(x, padding + totalGridSize);
-        ctx.stroke();
-
-        const y = padding + i * cellSize;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(padding + totalGridSize, y);
-        ctx.stroke();
+      if (!response.ok) {
+        throw new Error('Failed to export image');
       }
 
-      // Numbers
-      const fontSize = cellSize * 0.5;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
-          const puzzleValue = currentPuzzle.grid[row][col];
-          const displayValue = grid[row][col];
-
-          if (displayValue !== 0) {
-            const x = padding + col * cellSize + cellSize / 2;
-            const y = padding + row * cellSize + cellSize / 2;
-
-            if (includeSolution && puzzleValue === 0) {
-              // Solution numbers (generated)
-              ctx.fillStyle = "#666666";
-              ctx.font = `${fontSize}px Arial, sans-serif`;
-            } else {
-              // Given numbers
-              ctx.fillStyle = "#000000";
-              ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-            }
-
-            ctx.fillText(displayValue.toString(), x, y);
-          }
-        }
-      }
-
-      // Convert to blob and download
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          const fileName = `sudoku-${size}x${size}-${difficulty}${
-            includeSolution ? "-with-solution" : ""
-          }.png`;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }
-      }, "image/png");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       alert("Failed to export image. Please try again.");
       console.error("Image export error:", err);
