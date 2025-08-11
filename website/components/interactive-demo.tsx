@@ -29,10 +29,11 @@ import {
   Sparkles,
   Github,
   Package,
+  Image,
 } from "lucide-react";
 
 // Import the actual sudoku generator package
-import { generateSudoku, toPDF } from "../../src/index";
+import { generateSudoku, toPDF, toImage } from "../../src/index";
 
 interface SudokuData {
   grid: number[][];
@@ -147,6 +148,107 @@ export function InteractiveDemo() {
     } catch (err) {
       alert("Failed to export PDF. Please try again.");
       console.error("PDF export error:", err);
+    }
+  };
+
+  const handleExportImage = () => {
+    if (!currentPuzzle) return;
+
+    try {
+      // Create browser-compatible canvas for image generation
+      const cellSize = 80;
+      const grid = includeSolution
+        ? currentPuzzle.solution
+        : currentPuzzle.grid;
+      const totalGridSize = size * cellSize;
+      const padding = cellSize;
+      const canvasWidth = totalGridSize + padding * 2;
+      const canvasHeight = totalGridSize + padding * 2;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext("2d")!;
+
+      // Background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Grid lines
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 1;
+
+      const getBoxLinePositions = (size: number): number[] => {
+        if (size === 4) return [0, 2, 4];
+        if (size === 6) return [0, 2, 4, 6];
+        return [0, 3, 6, 9];
+      };
+
+      for (let i = 0; i <= size; i++) {
+        const isBoxLine = getBoxLinePositions(size).includes(i);
+        ctx.lineWidth = isBoxLine ? 3 : 1;
+
+        const x = padding + i * cellSize;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, padding + totalGridSize);
+        ctx.stroke();
+
+        const y = padding + i * cellSize;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(padding + totalGridSize, y);
+        ctx.stroke();
+      }
+
+      // Numbers
+      const fontSize = cellSize * 0.5;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          const puzzleValue = currentPuzzle.grid[row][col];
+          const displayValue = grid[row][col];
+
+          if (displayValue !== 0) {
+            const x = padding + col * cellSize + cellSize / 2;
+            const y = padding + row * cellSize + cellSize / 2;
+
+            if (includeSolution && puzzleValue === 0) {
+              // Solution numbers (generated)
+              ctx.fillStyle = "#666666";
+              ctx.font = `${fontSize}px Arial, sans-serif`;
+            } else {
+              // Given numbers
+              ctx.fillStyle = "#000000";
+              ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            }
+
+            ctx.fillText(displayValue.toString(), x, y);
+          }
+        }
+      }
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          const fileName = `sudoku-${size}x${size}-${difficulty}${
+            includeSolution ? "-with-solution" : ""
+          }.png`;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
+    } catch (err) {
+      alert("Failed to export image. Please try again.");
+      console.error("Image export error:", err);
     }
   };
 
@@ -330,7 +432,7 @@ export function InteractiveDemo() {
                       htmlFor="include-solution"
                       className="text-sm font-medium text-gray-700 cursor-pointer"
                     >
-                      Include solution in PDF
+                      Include solution
                     </Label>
                   </div>
                 </div>
@@ -358,12 +460,12 @@ export function InteractiveDemo() {
                   {isGenerating ? "Generating..." : "Generate New"}
                 </Button>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
                   <Button
                     variant="outline"
                     onClick={() => setShowSolution(!showSolution)}
                     disabled={!currentPuzzle}
-                    className="border-2 hover:bg-gray-50 transition-all duration-200 h-9"
+                    className="border-2 hover:bg-gray-50 transition-all duration-200 h-9 w-full"
                   >
                     {showSolution ? (
                       <EyeOff className="w-4 h-4 sm:mr-1" />
@@ -378,16 +480,29 @@ export function InteractiveDemo() {
                     </span>
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    onClick={handleExportPDF}
-                    disabled={!currentPuzzle}
-                    className="border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 h-9"
-                  >
-                    <Download className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Export</span>
-                    <span className="sm:hidden">PDF</span>
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleExportPDF}
+                      disabled={!currentPuzzle}
+                      className="border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 h-9"
+                    >
+                      <Download className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">PDF</span>
+                      <span className="sm:hidden">PDF</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={handleExportImage}
+                      disabled={!currentPuzzle}
+                      className="border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 h-9"
+                    >
+                      <Image className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">PNG</span>
+                      <span className="sm:hidden">PNG</span>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
